@@ -10,7 +10,7 @@ test("blogs are returned as json", async () => {
     .get("/api/blogs")
     .expect(200)
     .expect("Content-Type", /application\/json/);
-}, 100000);
+});
 
 test("the blog posts must have a property named id", async () => {
   const response = await api.get("/api/blogs");
@@ -26,7 +26,7 @@ test("test that verifies that making an HTTP POST request to the /api/blogs URL 
     title: "TEST BLOG",
     author: "TEST JEST",
     url: "some url",
-    likes: 1,
+    likes: 0,
   };
 
   const prevResponse = await api.get("/api/blogs");
@@ -67,6 +67,56 @@ test(" verifies that if the likes property is missing from the request, it will 
   }
 
   expect(newBlog.Likes).toBeDefined();
+});
+
+test("succeeds with a valid id", async () => {
+  const blogsAtStart = await api.get("/api/blogs");
+  const blogToView = blogsAtStart.body[0];
+
+  const resultBlog = await api
+    .get(`/api/blogs/${blogToView.id}`)
+    .expect(200)
+    .expect("Content-Type", /application\/json/);
+
+  expect(resultBlog.body).toEqual({
+    author: blogToView.author,
+    id: blogToView.id,
+    likes: blogToView.likes,
+    title: blogToView.title,
+    url: blogToView.url,
+  });
+});
+
+test("fails with statuscode 400 id is invalid", async () => {
+  const invalidId = "5a3d5da59070081a82a3445";
+
+  await api.get(`/api/blogs/${invalidId}`).expect(400);
+});
+
+describe("deletion of a blog", () => {
+  test("succeeds with status code 204 if id is valid", async () => {
+    const prevResponse = await api.get("/api/blogs");
+
+    const blogToDelete = prevResponse.body[1];
+
+    await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204);
+
+    const blogsAtEnd = await api.get("/api/blogs");
+
+    expect(blogsAtEnd.body).toHaveLength(prevResponse.body.length - 1);
+  });
+});
+
+test("updates the number of likes for a blog post(increments by 1)", async () => {
+  const prevResponse = await api.get("/api/blogs");
+
+  const blogToUpdate = prevResponse.body[1];
+
+  await api.put(`/api/blogs/${blogToUpdate.id}`).expect(204);
+
+  const blogsAtEnd = await api.get("/api/blogs");
+
+  expect(blogsAtEnd.body[1].likes).toBe(prevResponse.body[1].likes + 1);
 });
 
 afterAll(async () => {
