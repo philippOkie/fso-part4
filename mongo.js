@@ -13,9 +13,18 @@ const blogSchema = new mongoose.Schema({
 
 const Blog = mongoose.model("Blog", blogSchema);
 
-Blog.find({}).then((result) => {
-  result.forEach((blog) => {
-    console.log(blog);
-  });
-  mongoose.connection.close();
-});
+const fetchData = async () => {
+  try {
+    const result = await Blog.find({});
+
+    result.forEach((blog) => {
+      console.log(blog);
+    });
+
+    mongoose.connection.close();
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+};
+
+fetchData();
