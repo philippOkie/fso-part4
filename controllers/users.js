@@ -5,6 +5,20 @@ const User = require("../models/user");
 usersRouter.post("/", async (request, response) => {
   const { username, name, password } = request.body;
 
+  if (username.length < 3) {
+    console.log("Your username must be at least 3 characters long");
+    return response
+      .status(401)
+      .json("Your username must be at least 3 characters long");
+  }
+
+  if (password.length < 3) {
+    console.log("Your password must be at least 3 characters long");
+    return response
+      .status(401)
+      .json("Your password must be at least 3 characters long");
+  }
+
   const saltRounds = 10;
   const passwordHash = await bcrypt.hash(password, saltRounds);
 
@@ -24,7 +38,7 @@ usersRouter.get("/", async (request, response) => {
     title: 1,
     author: 1,
     url: 1,
-    likes: 0,
+    likes: 1,
   });
   response.json(users);
 });
