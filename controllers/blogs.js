@@ -81,14 +81,15 @@ blogsRouter.delete("/:id", async (request, response) => {
 });
 
 blogsRouter.put("/:id", async (request, response) => {
-  await Blog.findOneAndUpdate(
+  const updatedBlog = await Blog.findOneAndUpdate(
     { _id: request.params.id },
     {
       $inc: { likes: 1 },
     },
     { new: true, useFindAndModify: false }
   );
-  response.status(204).end();
+
+  response.json(updatedBlog);
 });
 
 module.exports = blogsRouter;
